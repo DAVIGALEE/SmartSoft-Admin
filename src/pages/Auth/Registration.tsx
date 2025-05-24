@@ -1,14 +1,14 @@
 import { useContext, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { AuthContext } from "@/contexts/AuthContext.tsx";
-import { Label } from "@/components/ui/label.tsx";
-import { Button } from "@/components/ui/button.tsx";
+import { AuthContext } from "@/contexts/AuthContext";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import { CheckCircle, AlertCircle } from "lucide-react";
+import { CheckCircle, AlertCircle, Loader2 } from "lucide-react";
 
 const registrationSchema = z.object({
     username: z.string().min(3, "Username must be at least 3 characters"),
@@ -26,12 +26,15 @@ type RegistrationFormInputs = z.infer<typeof registrationSchema>;
 
 const RegistrationPage = () => {
     const authContext = useContext(AuthContext);
+    const [errorMessage, setErrorMessage] = useState<string>('');
     const [successMessage, setSuccessMessage] = useState<string>('');
+    const [isLoading, setIsLoading] = useState<boolean>(false);
+    const navigate = useNavigate();
 
     if (!authContext) {
         throw new Error('RegistrationPage must be used within an AuthProvider');
     }
-    const { login } = authContext;
+    const { register: registerUser } = authContext;
 
     const { register, handleSubmit, watch, formState: { errors, dirtyFields } } = useForm<RegistrationFormInputs>({
         resolver: zodResolver(registrationSchema),
@@ -45,11 +48,31 @@ const RegistrationPage = () => {
 
     const watchedValues = watch();
 
-    const onSubmit = (data: RegistrationFormInputs) => {
+    const onSubmit = async (data: RegistrationFormInputs) => {
+        setErrorMessage('');
         setSuccessMessage('');
-        console.log("Registration Data:", data);
-        login();
-        setSuccessMessage("Registration successful! You are now logged in.");
+        setIsLoading(true);
+
+        try {
+            const success = await registerUser({
+                username: data.username,
+                password: data.password
+            });
+                console.log('hi',success)
+            if (success) {
+                setSuccessMessage("Registration successful! Redirecting to dashboard...");
+                setTimeout(() => {
+                    navigate('/captions');
+                }, 1500);
+            } else {
+                setErrorMessage("Registration failed. Please try a different username.");
+            }
+        } catch (error) {
+            setErrorMessage("An error occurred. Please try again.");
+            console.error(error);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const isFieldValid = (fieldName: keyof RegistrationFormInputs) => {
@@ -80,6 +103,7 @@ const RegistrationPage = () => {
                                     className={`${errors.username ? 'border-red-300 pr-10' : ''} 
                                               ${isFieldValid('username') ? 'border-green-300' : ''}`}
                                     {...register("username")}
+                                    disabled={isLoading}
                                 />
                                    {errors.username && dirtyFields.username && (
                                        <AlertCircle className="h-4 w-4 text-red-500 absolute right-3 top-1/2 transform -translate-y-1/2" />
@@ -104,6 +128,7 @@ const RegistrationPage = () => {
                                     className={`${errors.password ? 'border-red-300 pr-10' : ''} 
                                               ${isFieldValid('password') ? 'border-green-300' : ''}`}
                                     {...register("password")}
+                                    disabled={isLoading}
                                 />
                                 {errors.password && dirtyFields.password && (
                                     <AlertCircle className="h-4 w-4 text-red-500 absolute right-3 top-1/2 transform -translate-y-1/2" />
@@ -131,6 +156,7 @@ const RegistrationPage = () => {
                                     className={`${errors.confirmPassword ? 'border-red-300 pr-10' : ''} 
                                               ${isFieldValid('confirmPassword') ? 'border-green-300' : ''}`}
                                     {...register("confirmPassword")}
+                                    disabled={isLoading}
                                 />
                                 {errors.confirmPassword && dirtyFields.confirmPassword && (
                                     <AlertCircle className="h-4 w-4 text-red-500 absolute right-3 top-1/2 transform -translate-y-1/2" />
@@ -144,6 +170,12 @@ const RegistrationPage = () => {
                             )}
                         </div>
 
+                        {errorMessage && (
+                            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+                                {errorMessage}
+                            </div>
+                        )}
+
                         {successMessage && (
                             <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded">
                                 {successMessage}
@@ -153,8 +185,16 @@ const RegistrationPage = () => {
                         <Button
                             type="submit"
                             className="w-full"
+                            disabled={isLoading}
                         >
-                            Register
+                            {isLoading ? (
+                                <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    Creating Account...
+                                </>
+                            ) : (
+                                'Register'
+                            )}
                         </Button>
                     </form>
                     <p className="mt-6 text-center text-sm text-gray-600">

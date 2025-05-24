@@ -12,13 +12,15 @@ const App = () => {
             <BrowserRouter>
                 <div className="min-h-screen bg-gray-50 text-gray-800">
                     <main className="flex-grow py-10">
-                        <Routes>
-                            <Route path="/login" element={<LoginPage />} />
-                            <Route path="/register" element={<RegistrationPage />} />
-                            <Route path="/captions" element={<PrivateRoute><CaptionsPage /></PrivateRoute>} />
-                            <Route path="/countries" element={<PrivateRoute><CountriesPage /></PrivateRoute>} />
-                            <Route path="/" element={<Navigate to="/login" />} />
-                        </Routes>
+                        <AuthProvider>
+                            <Routes>
+                                <Route path="/login" element={<LoginPage />} />
+                                <Route path="/register" element={<RegistrationPage />} />
+                                <Route path="/captions" element={<PrivateRoute><CaptionsPage /></PrivateRoute>} />
+                                <Route path="/countries" element={<PrivateRoute><CountriesPage /></PrivateRoute>} />
+                                <Route path="/" element={<Navigate to="/login" />} />
+                            </Routes>
+                        </AuthProvider>
                     </main>
                 </div>
             </BrowserRouter>

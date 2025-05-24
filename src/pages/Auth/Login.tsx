@@ -1,5 +1,5 @@
 import { useContext, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Loader2 } from "lucide-react";
 
 const loginSchema = z.object({
     username: z.string().min(1, "Username is required"),
@@ -19,6 +20,8 @@ type LoginFormInputs = z.infer<typeof loginSchema>;
 const LoginPage = () => {
     const authContext = useContext(AuthContext);
     const [errorMessage, setErrorMessage] = useState<string>('');
+    const [isLoading, setIsLoading] = useState<boolean>(false);
+    const navigate = useNavigate();
 
     if (!authContext) {
         throw new Error('LoginPage must be used within an AuthProvider');
@@ -27,14 +30,32 @@ const LoginPage = () => {
 
     const { register, handleSubmit, formState: { errors } } = useForm<LoginFormInputs>({
         resolver: zodResolver(loginSchema),
+        defaultValues: {
+            username: "",
+            password: ""
+        }
     });
 
-    const onSubmit = (data: LoginFormInputs) => {
+    const onSubmit = async (data: LoginFormInputs) => {
         setErrorMessage('');
-        if (data.username === "user" && data.password === "password") {
-            login();
-        } else {
-            setErrorMessage("Invalid username or password.");
+        setIsLoading(true);
+
+        try {
+            const { success, message } = await login({
+                username: data.username,
+                password: data.password
+            });
+
+            if (success) {
+                navigate('/captions');
+            } else {
+                setErrorMessage(message);
+            }
+        } catch (error) {
+            setErrorMessage("An error occurred. Please try again.");
+            console.error(error);
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -51,19 +72,47 @@ const LoginPage = () => {
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
                         <div>
                             <Label htmlFor="username">Username</Label>
-                            <Input id="username" {...register("username")} />
+                            <Input
+                                id="username"
+                                {...register("username")}
+                                disabled={isLoading}
+                            />
                             {errors.username && <p className="text-red-500 text-sm mt-1">{errors.username.message}</p>}
                         </div>
                         <div>
                             <Label htmlFor="password">Password</Label>
-                            <Input id="password" type="password" {...register("password")} />
+                            <Input
+                                id="password"
+                                type="password"
+                                {...register("password")}
+                                disabled={isLoading}
+                            />
                             {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>}
                         </div>
-                        {errorMessage && <p className="text-red-500 text-center text-sm">{errorMessage}</p>}
-                        <Button type="submit" className="w-full">Sign In</Button>
+
+                        {errorMessage && (
+                            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded text-sm">
+                                {errorMessage}
+                            </div>
+                        )}
+
+                        <Button
+                            type="submit"
+                            className="w-full"
+                            disabled={isLoading}
+                        >
+                            {isLoading ? (
+                                <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    Signing in...
+                                </>
+                            ) : (
+                                'Sign In'
+                            )}
+                        </Button>
                     </form>
                     <p className="mt-6 text-center text-sm text-gray-600">
-                        Don’t have an account?{" "}
+                        Don't have an account?{" "}
                         <Link to="/register" className="text-blue-600 hover:underline">Register here</Link>
                     </p>
                 </CardContent>

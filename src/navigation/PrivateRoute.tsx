@@ -12,8 +12,9 @@ const PrivateRoute = ({ children }: PrivateRouteProps) => {
     if (!authContext) {
         throw new Error('PrivateRoute must be used within an AuthProvider');
     }
-
     const { isAuthenticated } = authContext;
+    console.log(isAuthenticated)
+
     return isAuthenticated ? children : <Navigate to="/login" />;
 };
 
