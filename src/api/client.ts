@@ -1,6 +1,6 @@
 import {getAuthToken} from '@/services/auth.service';
 import {ApiError} from '@/api/types';
-import {API_BASE_URL} from "@/api/endpoints.ts";
+import {API_BASE_URL, SECOND_API_BASE_URL} from "@/api/endpoints.ts";
 
 
 async function handleResponse<T>(response: Response): Promise<T> {
@@ -47,6 +47,13 @@ function createRequestOptions(
 }
 
 export const api = {
+    async getCountries<T>(url: string, headers?: Record<string, string>): Promise<T> {
+        const fullUrl = url.startsWith('http') ? url : `${SECOND_API_BASE_URL}${url}`;
+        const options = createRequestOptions('GET', undefined, headers);
+        const response = await fetch(fullUrl, options);
+        return handleResponse<T>(response);
+    },
+
     async get<T>(url: string, headers?: Record<string, string>): Promise<T> {
         const fullUrl = url.startsWith('http') ? url : `${API_BASE_URL}${url}`;
         const options = createRequestOptions('GET', undefined, headers);

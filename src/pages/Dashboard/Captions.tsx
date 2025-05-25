@@ -127,6 +127,7 @@ const CaptionsPage = () => {
             form.reset();
             await loadWords();
         } catch (err) {
+            console.log('Error adding word:', err);
             showMessage('error', 'Failed to add word. Please try again.');
         } finally {
             setIsLoading(false);
@@ -157,6 +158,7 @@ const CaptionsPage = () => {
             handleEditDialogClose();
             await loadWords();
         } catch (err) {
+            console.log('Error updating word:', err);
             showMessage('error', 'Failed to update word. Please try again.');
         } finally {
             setIsLoading(false);
@@ -174,6 +176,7 @@ const CaptionsPage = () => {
             showMessage('success', 'Word deleted successfully!');
             await loadWords();
         } catch (err) {
+            console.log('Error deleting word:', err);
             showMessage('error', 'Failed to delete word. Please try again.');
         } finally {
             setIsLoading(false);

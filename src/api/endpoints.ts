@@ -1,4 +1,5 @@
 export const API_BASE_URL =  'http://localhost:3000/api';
+export const SECOND_API_BASE_URL =  'http://localhost:3000/countries-api';
 
 export const AUTH_ENDPOINTS = {
     REGISTER: '/Api/Client/Register',

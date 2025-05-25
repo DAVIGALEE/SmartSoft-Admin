@@ -23,6 +23,16 @@ export default defineConfig({
                       console.log('Proxy error:', err);
                   });
               }
+          },
+          '/countries-api': {
+              target: 'https://restcountries.com/v3.1/',
+              changeOrigin: true,
+              rewrite: (path) => path.replace(/^\/countries-api/, ''),
+              configure: (proxy, _options) => {
+                  proxy.on('error', (err, _req, _res) => {
+                      console.log('Proxy error:', err);
+                  });
+              }
           }
       },
   }
