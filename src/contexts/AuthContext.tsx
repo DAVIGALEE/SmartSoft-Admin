@@ -4,11 +4,8 @@ import { isAuthenticated, getCurrentUser } from '@/services/auth.service';
 import { LoginRequest, RegistrationRequest } from '@/api/types';
 import {
     AuthActionResponse,
-    loginUser,
-    logoutUser,
-    registerUser
+    authActions,
 } from "@/actions/auth.actions";
-
 
 interface AuthState {
     isLoading: boolean;
@@ -22,6 +19,7 @@ interface AuthContextType extends AuthState {
     register: (userData: RegistrationRequest) => Promise<boolean>;
     logout: () => void;
     clearError: () => void;
+    refreshAuth: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -38,31 +36,47 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         error: null
     });
 
-    useEffect(() => {
-        const initAuth = () => {
-            if (isAuthenticated()) {
-                const storedUser = getCurrentUser();
-                if (storedUser) {
-                    setState({
-                        user: storedUser as User,
-                        isAuthenticated: true,
-                        isLoading: false,
-                        error: null
-                    });
-                    return;
-                }
+    const initAuth = () => {
+        setState(prev => ({ ...prev, isLoading: true }));
+
+        if (isAuthenticated()) {
+            const storedUser = getCurrentUser();
+            if (storedUser) {
+                setState({
+                    user: storedUser as User,
+                    isAuthenticated: true,
+                    isLoading: false,
+                    error: null
+                });
+                return;
             }
-            setState(prev => ({ ...prev, isLoading: false }));
+        }
+        setState({
+            isLoading: false,
+            isAuthenticated: false,
+            user: null,
+            error: null
+        });
+    };
+
+    useEffect(() => {
+        initAuth();
+
+        const handleStorageChange = (e: StorageEvent) => {
+            if (e.key === 'auth_token' || e.key === 'user_data') {
+                initAuth();
+            }
         };
 
-        initAuth();
+        window.addEventListener('storage', handleStorageChange);
+        return () => window.removeEventListener('storage', handleStorageChange);
     }, []);
 
     const login = async (credentials: LoginRequest): Promise<AuthActionResponse> => {
         setState(prev => ({ ...prev, isLoading: true, error: null }));
 
         try {
-            const response = await loginUser(credentials);
+            const response = await authActions.loginUser(credentials);
 
             if (response.success && response.user) {
                 setState({
@@ -100,7 +114,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setState(prev => ({ ...prev, isLoading: true, error: null }));
 
         try {
-            const response = await registerUser(userData);
+            const response = await authActions.registerUser(userData);
 
             if (response.success && response.user) {
                 setState({
@@ -133,7 +147,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setState(prev => ({ ...prev, isLoading: true }));
 
         try {
-            await logoutUser();
+            await authActions.logoutUser();
         } catch (error) {
             console.error('Error during logout:', error);
         }
@@ -150,12 +164,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setState(prev => ({ ...prev, error: null }));
     };
 
+    const refreshAuth = (): void => {
+        initAuth();
+    };
+
     const contextValue: AuthContextType = {
         ...state,
         login,
         register,
         logout,
-        clearError
+        clearError,
+        refreshAuth
     };
 
     return (
@@ -164,6 +183,5 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         </AuthContext.Provider>
     );
 };
-
 
 export { AuthContext };
