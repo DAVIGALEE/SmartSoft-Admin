@@ -31,7 +31,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
-import { Pencil, Trash2, Plus, LogOut, Loader2, AlertCircle, CheckCircle, XCircle, Heart, RefreshCw } from "lucide-react";
+import { Pencil, Trash2, Plus, Loader2, AlertCircle, CheckCircle, XCircle, Heart, RefreshCw } from "lucide-react";
 import { captionsActions, Word, AddWordRequest, EditWordRequest } from '@/actions/captions.actions';
 
 const wordSchema = z.object({

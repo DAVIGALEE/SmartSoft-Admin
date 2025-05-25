@@ -1,4 +1,5 @@
 import { api } from '@/api/client';
+import {COUNTRIES_ENDPOINTS} from "@/api/endpoints.ts";
 
 export interface Country {
     name: {
@@ -31,7 +32,7 @@ export interface Country {
 class CountriesService {
     async getAllCountries(): Promise<Country[]> {
         try {
-            const response = await api.getCountries<Country[]>('/all');
+            const response = await api.getCountries<Country[]>(COUNTRIES_ENDPOINTS.GET_ALL_COUNTRIES);
             return response;
         } catch (error) {
             console.error('Error fetching countries:', error);

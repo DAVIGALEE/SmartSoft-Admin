@@ -12,3 +12,7 @@ export const CAPTIONS_ENDPOINTS = {
     EDIT_WORD: '/Api/Client/EditWord',
     DELETE_WORD: '/Api/Client/DeleteWord',
 };
+
+export const COUNTRIES_ENDPOINTS = {
+    GET_ALL_COUNTRIES: '/all',
+}
