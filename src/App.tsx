@@ -5,6 +5,8 @@ import RegistrationPage from "@/pages/Auth/Registration.tsx";
 import { PrivateRoute } from "@/navigation/PrivateRoute.tsx";
 import CaptionsPage from "@/pages/Dashboard/Captions.tsx";
 import CountriesPage from "@/pages/Dashboard/Countries.tsx";
+import { AuthLayout } from './pages/Auth/Layout';
+import {DashboardLayout} from "@/pages/Dashboard/Layout.tsx";
 
 const App = () => {
     return (
@@ -14,10 +16,18 @@ const App = () => {
                     <main className="flex-grow py-10">
                         <AuthProvider>
                             <Routes>
-                                <Route path="/login" element={<LoginPage />} />
-                                <Route path="/register" element={<RegistrationPage />} />
-                                <Route path="/captions" element={<PrivateRoute><CaptionsPage /></PrivateRoute>} />
-                                <Route path="/countries" element={<PrivateRoute><CountriesPage /></PrivateRoute>} />
+                                <Route element={<AuthLayout />}>
+                                    <Route path="/login" element={<LoginPage />} />
+                                    <Route path="/register" element={<RegistrationPage />} />
+                                </Route>
+                                <Route element={
+                                    <PrivateRoute>
+                                        <DashboardLayout />
+                                    </PrivateRoute>
+                                }>
+                                    <Route path="/captions" element={<CaptionsPage />} />
+                                    <Route path="/countries" element={<CountriesPage />} />
+                                </Route>
                                 <Route path="/" element={<Navigate to="/login" />} />
                             </Routes>
                         </AuthProvider>

@@ -82,8 +82,6 @@ const CaptionsPage = () => {
         throw new Error('CaptionsPage must be used within an AuthProvider');
     }
 
-    const { logout } = authContext;
-
     useEffect(() => {
         if (message) {
             const timer = setTimeout(() => {
@@ -200,14 +198,6 @@ const CaptionsPage = () => {
                             Manage your word translations and vocabulary
                         </p>
                     </div>
-                    <Button
-                        onClick={logout}
-                        variant="destructive"
-                        className="flex items-center gap-2 !bg-red-600 hover:!bg-red-700 !text-white !border-red-600 hover:!border-red-700"
-                    >
-                        <LogOut className="w-4 h-4 !text-white" />
-                        Logout
-                    </Button>
                 </div>
 
                 {message && (
